@@ -1,0 +1,1 @@
+data/word2vec/W2V_150.txt filter=lfs diff=lfs merge=lfs -text
