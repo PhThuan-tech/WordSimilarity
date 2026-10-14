@@ -6,9 +6,8 @@ Bài tập xử lý độ tương đồng từ tiếng Việt bằng pretrained 
 2. Tìm `k` từ gần nhất với một từ cho trước.
 3. Phân loại cặp từ đồng nghĩa (`SYN`) hoặc trái nghĩa (`ANT`).
 
-Phần đọc, kiểm tra và thống kê dữ liệu dùng chung đã hoàn thành. **Task 1 đã
-triển khai** cosine similarity, đánh giá ViSim và xuất CSV/JSON; Task 2 và Task 3
-vẫn là placeholder trên nhánh này. Các task được phát triển độc lập.
+Phần đọc và kiểm tra dữ liệu dùng chung cùng cả ba task đã được triển khai. Mỗi
+task nằm trong module riêng, có CLI và unit test độc lập.
 
 ## Cài đặt
 
@@ -28,11 +27,7 @@ Dataset và Word2Vec đã có sẵn trong `data/`, không cần tải thêm.
 python -m pytest -q
 ```
 
-Kết quả hiện tại:
-
-```text
-35 passed
-```
+Toàn bộ test phải kết thúc với trạng thái `passed`.
 
 Test suite sử dụng thư mục tạm riêng cho từng test nên không phụ thuộc vào thư
 mục `%TEMP%` dùng chung của Windows.
@@ -54,7 +49,13 @@ Task 1 chạy được và tạo `results/task1_predictions.csv` cùng
 `results/task1_predictions_summary.json`: 344/400 cặp covered (86%), Pearson
 Sim2 = 0.4468197550, Spearman = 0.4077568888. Báo cáo có cả Sim1 và Sim2;
 CSV giữ đủ 400 dòng, metric bỏ qua 56 cặp OOV. Xem [Task 1](docs/TASK1.md).
-Task 2 và Task 3 vẫn báo chưa triển khai trên nhánh này.
+
+Task 2 dùng phép tính cosine vectorized, loại query khỏi kết quả và sắp xếp theo
+score giảm dần, token tăng dần khi bằng điểm. Xem [Task 2](docs/TASK2.md).
+
+Task 3 dùng feature Word2Vec đối xứng và Logistic Regression cân bằng lớp. Trên
+1.173 cặp ViCon covered, accuracy = 0.7724 và macro-F1 = 0.7713; CSV vẫn giữ đủ
+1.400 dòng. Xem [kết quả Task 3](docs/TASK3_RESULTS.md).
 
 ## Phân công
 
@@ -129,3 +130,6 @@ ràng và không được dự đoán bằng label lookup.
 - [Hướng dẫn từng thành viên](docs/TEAM_TASK_GUIDE.md)
 - [Hợp đồng API chung](docs/API_CONTRACT.md)
 - [Quy trình Git và tích hợp](docs/INTEGRATION_GUIDE.md)
+- [Task 1: cosine và ViSim](docs/TASK1.md)
+- [Task 2: k-nearest words](docs/TASK2.md)
+- [Task 3: kết quả classifier](docs/TASK3_RESULTS.md)

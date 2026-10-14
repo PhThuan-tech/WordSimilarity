@@ -12,6 +12,14 @@ def test_cli_contract_parses_all_three_commands() -> None:
     assert parser.parse_args(["classify"]).command == "classify"
 
 
-def test_stage0_task_command_is_an_explicit_placeholder(capsys) -> None:
-    assert main(["classify"]) == 2
-    assert "intentionally not implemented" in capsys.readouterr().out
+def test_completed_task_command_returns_success(monkeypatch) -> None:
+    captured = {}
+
+    def fake_dispatch(args):
+        captured["command"] = args.command
+        return 0
+
+    monkeypatch.setattr("main._dispatch", fake_dispatch)
+
+    assert main(["classify"]) == 0
+    assert captured["command"] == "classify"

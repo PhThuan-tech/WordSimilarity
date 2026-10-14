@@ -6,13 +6,22 @@ from src.common import load_embeddings, OutOfVocabularyError
 from src.task2.nearest import NearestWordSearcher
 
 
+def _configure_utf8_stdout() -> None:
+    """Make Vietnamese output safe on Windows consoles using legacy encodings."""
+
+    reconfigure = getattr(sys.stdout, "reconfigure", None)
+    if callable(reconfigure):
+        reconfigure(encoding="utf-8", errors="backslashreplace")
+
+
 def run(args: Namespace) -> int:
     """Orchestrates Task 2: Find top-k nearest words using vectorized cosine similarity."""
+    _configure_utf8_stdout()
     word = args.word
     k = args.k
 
     print("Đang tải dữ liệu Word2Vec...")
-    embeddings = load_embeddings("data/word2vec/W2V_150.txt")
+    embeddings = load_embeddings(args.embeddings)
 
     try:
         searcher = NearestWordSearcher(embeddings)

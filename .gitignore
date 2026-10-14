@@ -8,6 +8,11 @@ venv/
 .idea/
 .vscode/
 
-# Generated experiment outputs; keep the directory itself.
+# Ignore ad-hoc experiment outputs; keep canonical assignment artifacts.
 results/*
 !results/.gitkeep
+!results/task1_predictions.csv
+!results/task1_predictions_summary.json
+!results/task3_predictions.csv
+!results/task3_predictions_metrics.json
+!results/task3_predictions_report.md

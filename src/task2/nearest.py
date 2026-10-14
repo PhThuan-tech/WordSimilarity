@@ -15,6 +15,7 @@ class NearestWordSearcher:
     def __init__(self, embeddings):
         self.embeddings = embeddings
         self.vocab = list(embeddings.get_vocabulary())
+        self.vocab_array = np.asarray(self.vocab, dtype=np.str_)
         self.word_to_idx = {w: i for i, w in enumerate(self.vocab)}
         
         # Lấy ma trận embedding nguyên bản và chuẩn hóa L2 norm sẵn
@@ -22,7 +23,8 @@ class NearestWordSearcher:
         
         # Tính L2 norm cho từng dòng, tránh chia cho 0
         norms = np.linalg.norm(raw_matrix, axis=1, keepdims=True)
-        norms[norms == 0] = 1.0  # Tránh lỗi NaN khi row norm = 0
+        self.zero_norm_mask = norms[:, 0] == 0
+        norms[self.zero_norm_mask] = 1.0  # Tránh lỗi NaN khi row norm = 0
         
         # Cache ma trận đã chuẩn hóa
         self.norm_matrix = raw_matrix / norms
@@ -37,38 +39,40 @@ class NearestWordSearcher:
             raise OutOfVocabularyError(f"Từ '{word}' không có trong từ điển (OOV).")
 
         query_idx = self.word_to_idx[word]
+        if self.zero_norm_mask[query_idx]:
+            raise ValueError(
+                f"Không thể tính cosine cho từ '{word}' vì vector có norm bằng 0."
+            )
         q_vec = self.norm_matrix[query_idx]
 
         # 3. Tính Cosine Similarity hàng loạt: s = E_norm @ q
         scores = self.norm_matrix @ q_vec
 
-        # 4. Gán score của từ truy vấn = -inf để không xuất hiện trong top-k
+        # 4. Loại từ truy vấn và các vector zero-norm vì cosine không xác định.
+        scores[self.zero_norm_mask] = -np.inf
         scores[query_idx] = -np.inf
 
-        # 5. Xử lý k quá lớn (clamp k tối đa bằng vocab_size - 1)
-        max_possible_k = len(self.vocab) - 1
+        # 5. Xử lý k quá lớn (clamp theo số candidate có cosine hợp lệ).
+        max_possible_k = int(np.isfinite(scores).sum())
         effective_k = min(k, max_possible_k)
 
         if effective_k <= 0:
             return []
 
-        # 6. Dùng np.argpartition để lấy candidate top-k nhanh nhất
-        partition_indices = np.argpartition(scores, -effective_k)[-effective_k:]
+        # 6. Sắp xếp toàn cục theo score giảm dần rồi token tăng dần.
+        # np.lexsort bảo đảm tie-break đúng cả tại ranh giới top-k; argpartition
+        # đơn thuần có thể chọn ngẫu nhiên một phần tử trong nhóm đồng hạng.
+        ordered_indices = np.lexsort((self.vocab_array, -scores))
+        top_indices = [
+            int(idx)
+            for idx in ordered_indices
+            if np.isfinite(scores[idx])
+        ][:effective_k]
 
-        # 7. Sắp xếp lại top-k candidates chính xác:
-        # Tie-break rule: Similarity giảm dần, nếu bằng nhau thì Token tăng dần (alphabet)
-        candidates = [
-            (idx, float(scores[idx]), self.vocab[idx])
-            for idx, score in zip(partition_indices, scores[partition_indices])
-            if np.isfinite(score)
-        ]
-
-        candidates.sort(key=lambda x: (-x[1], x[2]))
-
-        # 8. Trả về kết quả
+        # 7. Trả về kết quả
         return [
-            Neighbor(word=token, similarity=sim)
-            for _, sim, token in candidates[:effective_k]
+            Neighbor(word=self.vocab[idx], similarity=float(scores[idx]))
+            for idx in top_indices
         ]
 
 
