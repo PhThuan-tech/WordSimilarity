@@ -6,9 +6,9 @@ Bài tập xử lý độ tương đồng từ tiếng Việt bằng pretrained 
 2. Tìm `k` từ gần nhất với một từ cho trước.
 3. Phân loại cặp từ đồng nghĩa (`SYN`) hoặc trái nghĩa (`ANT`).
 
-Repository hiện ở **Stage 0**: phần đọc, kiểm tra và thống kê dữ liệu dùng chung
-đã hoàn thành. Thuật toán của ba task được để riêng cho ba thành viên phát triển
-độc lập.
+Phần đọc, kiểm tra và thống kê dữ liệu dùng chung đã hoàn thành. **Task 1 đã
+triển khai** cosine similarity, đánh giá ViSim và xuất CSV/JSON; Task 2 và Task 3
+vẫn là placeholder trên nhánh này. Các task được phát triển độc lập.
 
 ## Cài đặt
 
@@ -31,7 +31,7 @@ python -m pytest -q
 Kết quả hiện tại:
 
 ```text
-18 passed
+35 passed
 ```
 
 Test suite sử dụng thư mục tạm riêng cho từng test nên không phụ thuộc vào thư
@@ -50,8 +50,11 @@ python main.py nearest --word sinh_viên --k 10
 python main.py classify
 ```
 
-Ở Stage 0, ba lệnh mới chỉ kiểm tra tham số và báo chưa triển khai. Mỗi thành
-viên sẽ thay hàm `run(args)` trong module của task mình.
+Task 1 chạy được và tạo `results/task1_predictions.csv` cùng
+`results/task1_predictions_summary.json`: 344/400 cặp covered (86%), Pearson
+Sim2 = 0.4468197550, Spearman = 0.4077568888. Báo cáo có cả Sim1 và Sim2;
+CSV giữ đủ 400 dòng, metric bỏ qua 56 cặp OOV. Xem [Task 1](docs/TASK1.md).
+Task 2 và Task 3 vẫn báo chưa triển khai trên nhánh này.
 
 ## Phân công
 

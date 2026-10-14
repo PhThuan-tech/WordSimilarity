@@ -13,5 +13,5 @@ def test_cli_contract_parses_all_three_commands() -> None:
 
 
 def test_stage0_task_command_is_an_explicit_placeholder(capsys) -> None:
-    assert main(["similarity"]) == 2
+    assert main(["classify"]) == 2
     assert "intentionally not implemented" in capsys.readouterr().out
